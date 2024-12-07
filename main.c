@@ -1,21 +1,10 @@
 #include "include/raylib.h"
+#include "functions.h"
 #include <math.h>
 #include <stdlib.h> // For rand() and srand()
 #include <time.h>   // For time()
 #include <string.h> // For strlen()
 #include <stdio.h>
-
-// Functions
-// Random red pixels
-void DrawRandomRedPixels(int count, int screenWidth, int screenHeight) {
-    for (int i = 0; i < count; i++) {
-        int x = rand() % screenWidth;
-        int y = rand() % screenHeight;
-        DrawPixel(x, y, RED);
-    }
-}
-
-
 
 // Game state enumeration
 typedef enum {
@@ -188,7 +177,7 @@ int main()  {
         // Apply glitch effect only in the main menu
         if (gameState == MENU && glitchEffect) {
             ClearBackground(BLACK);
-            DrawRandomRedPixels(100, screenWidth, screenHeight); // Draw 100 random red pixels
+            DrawRandomRedPixels(250, screenWidth, screenHeight); // Draw 100 random red pixels
 
             // Change title to "Who are you?" in red color
             const char *glitchTitleText = "Who are you?";
