@@ -6,22 +6,16 @@
 #include <string.h> // For strlen()
 #include <stdio.h>
 
-// Game state enumeration
-typedef enum {
-    MENU,
-    GAME,
-    INFO,
-    GAME_OVER
-} GameState;
-
 // Main game function
 int main()  {
     // Initialization Stuff
 
-    // Menu sound
+    // Menu stuff and sound
+    Texture2D menuBackground;
     Music menuMusic;
     Sound typingSound;
     Sound btnClick;
+    Font customFont;
 
     // In-Game Sound
     Sound fruitCaughtSound;
@@ -29,27 +23,27 @@ int main()  {
     Sound playerCollision;
 
     // Overworld Textures
-    Texture2D menuBackground;
+    Texture2D overworldBg;
+    Texture2D overworldGrass;
 
     // Overworld Sound
     Music overworldMusic; // Background music for the overworld normal
     Music overworldMusic2; // Background music for the overworld mascot slightly angry
     Music overworldMusic3; // Background music for the overworld mascot angry
 
-    // Dark Twist Textures
-
-
-    // Dark Twist Sound
-    Music darkMusic; // Background music for the dark twist
-    Sound darkTwistTransitionSound; // Sound effect for the transition to the dark twist
-    Sound darkTwistHeartbeat; // Sound effect for the dark twist heartbeat
-    Sound darkTwistBreathing; // Sound effect for the dark twist breathing
+    // HorrorTextures
+    Texture2D pentagram;
 
     // Player Textures
-    Texture2D playerTexture = LoadTexture("textures/player.png");
+    Texture2D playerOverworldIdle;
+    Texture2D playerOverworldRunLeft;
+    Texture2D playerOverworldRunRight;
+    
 
     // Mascot Textures
-    Texture2D mascotTexture = LoadTexture("textures/mascot.png");
+    // Texture2D overworldMascot1 = LoadTexture("textures/mascot/mascot1.png");
+    // Texture2D overworldMascot2 = LoadTexture("textures/mascot/mascot2.png");
+
 
     int voicelineIndex = 0;
     bool briefingDone = false;
@@ -70,21 +64,16 @@ int main()  {
     const int screenHeight = 800;
     
     InitWindow(screenWidth, screenHeight, "Catch_Fruits_Test1.exe");
-
+    InitAudioDevice();
     SetTargetFPS(144);
 
+    // Menu Stuff
+    InitializeGame(&menuBackground, &menuMusic, &typingSound, &btnClick, &customFont);
+
     // Audio initialization
-    InitAudioDevice();
-    menuMusic = LoadMusicStream("audios/BGM/menuSoundtrack.ogg");
     PlayMusicStream(menuMusic);
     SetMusicVolume(menuMusic, 0.5f);
 
-    // Load custom font for the game
-    Font customFont = LoadFontEx("fonts/BitPotion.ttf", 32, 0, 0);
-
-    // Menu Stuff
-    menuBackground = LoadTexture("textures_audios/pfp.png"); // Load the menu background
-    btnClick = LoadSound("audios/btnClicked.wav"); // Load button click sound
     const char *titleText = "Catch the Fruits"; // Title text
 
     typingSound = LoadSound("audios/menuVoice.ogg"); // Load typing sound
@@ -149,9 +138,9 @@ int main()  {
     bool darkTwist = false;
 
     // In-Game Sound
-    fruitCaughtSound = LoadSound("audios/catch.wav");
-    gamePause = LoadSound("audios/pause.wav");
-    playerCollision = LoadSound("audios/playerCollision.wav");
+    // fruitCaughtSound = LoadSound("audios/catch.wav");
+    // gamePause = LoadSound("audios/pause.wav");
+    // playerCollision = LoadSound("audios/playerCollision.wav");
 
     // Mascot's Voicelines
     Sound voicelineSounds[3];
@@ -176,11 +165,9 @@ int main()  {
     overworldMusic2 = LoadMusicStream("audios/BGM/overworldMusic2.ogg");
     overworldMusic3 = LoadMusicStream("audios/BGM/overworldMusic3.ogg");
 
-    // Dark Twist Sound
-    darkMusic = LoadMusicStream("audios/BGM/finale.ogg");
-    darkTwistTransitionSound = LoadSound("audios/BGM/darkTwistTransition.ogg");
-    darkTwistHeartbeat = LoadSound("audios/BGM/heartbeat.ogg");
-    darkTwistBreathing = LoadSound("audios/BGM/breathingSlow.wav");
+    // Load overworld textures
+    overworldBg = LoadTexture("textures/world/overworld_bg.png");
+    overworldGrass = LoadTexture("textures/world/grass.png");
 
 
     GameState gameState = MENU;
@@ -298,10 +285,13 @@ int main()  {
                 if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
                     Vector2 mousePosition = GetMousePosition();
                     if (CheckCollisionPointRec(mousePosition, playButton)) {
+                        PlaySound(btnClick);
                         gameState = GAME;
                     } else if (CheckCollisionPointRec(mousePosition, infoButton)) {
+                        PlaySound(btnClick);
                         gameState = INFO;
                     } else if (CheckCollisionPointRec(mousePosition, quitButton)) {
+                        PlaySound(btnClick);
                         CloseWindow();
                     } else if (CheckCollisionPointRec(mousePosition, (Rectangle){ (screenWidth - textTitleWidth) / 2, (screenHeight - textTitleHeight) / 4 - yOffset, textTitleWidth, textTitleHeight })) {
                         showChat = true; // Show the chat box
@@ -319,33 +309,23 @@ int main()  {
         }
 
         // Update typing effect
-        if (showChat)   {
-            charTime += GetFrameTime();
-            if (charTime >= 0.05f) // Adjust the typing speed here
-            {
-                charTime = 0.0f;
-                if (charIndex < strlen(currentChatText))    {
-                    charIndex++;
-                    PlaySound(typingSound); // Play the typing sound effect
-                }
-            }
+        if (showChat) {
+            UpdateTypingEffect(&charTime, &charIndex, currentChatText, typingSound);
         }
 
+        // Game state
         else if (gameState == GAME)
         {
-            // Draw background sky
-            DrawTexture(skyTexture, 0, 0, WHITE);
-
-            // Draw ground
-            DrawTexture(groundTexture, 0, screenHeight - groundTexture.height, WHITE);
+            DrawWorld(overworldBg, overworldGrass, screenWidth, screenHeight);
 
             // Draw player's character
-            Vector2 playerPosition = { screenWidth / 2 - playerTexture.width / 2, screenHeight - groundTexture.height - playerTexture.height };
-            DrawTexture(playerTexture, playerPosition.x, playerPosition.y, WHITE);
+            Vector2 playerPosition = { screenWidth / 2 - playerOverworldIdle.width / 2, screenHeight - playerOverworldIdle.height - overworldGrass.height };
+            DrawTexture(playerOverworldIdle, playerPosition.x, playerPosition.y, WHITE);
 
             // Draw mascot with floating effect
-            mascotYOffset = sinf(elapsedTime * mascotFloatSpeed) * 5.0f; // Subtle floating effect
-            DrawTexture(mascotTexture, screenWidth - mascotTexture.width - 20, mascotY + mascotYOffset, WHITE);
+            // mascotYOffset = sinf(elapsedTime * mascotFloatSpeed) * 5.0f; 
+            // Subtle floating effect
+            // DrawTexture(overworldMascot1, screenWidth - overworldMascot1.width - 20, mascotY + mascotYOffset, WHITE);
 
             // Draw player's score
             DrawTextEx(customFont, TextFormat("Score: %d", fruitsCaught), (Vector2){ 20, 20 }, 30, 1, BLACK);
@@ -365,7 +345,7 @@ int main()  {
                         DrawTextEx(customFont, TextSubtext(voiceline, i * lineLength, lineLength), (Vector2){ (screenWidth - maxWidth) / 2, voicelineY + i * 25 }, 20, 1, BLUE);
                     }
                 } else {
-                    DrawTextEx(customFont, TextSubtext(voiceline, 0, charIndex), (Vector2){ (screenWidth - voicelineWidth) / 2, voicelineY }, 20, 1, BLUE);
+                    DrawTextEx(customFont, TextSubtext(voiceline, 0, charIndex), (Vector2){ (screenWidth - voicelineWidth) / 2, voicelineY }, 20, 1, YELLOW);
                 }
 
                 charTime += GetFrameTime();
@@ -391,10 +371,6 @@ int main()  {
                                 // Start countdown
                                 for (int i = 3; i > 0; i--) {
                                     ClearBackground(RAYWHITE);
-                                    DrawTexture(skyTexture, 0, 0, WHITE);
-                                    DrawTexture(groundTexture, 0, screenHeight - groundTexture.height, WHITE);
-                                    DrawTexture(playerTexture, playerPosition.x, playerPosition.y, WHITE);
-                                    DrawTexture(mascotTexture, screenWidth - mascotTexture.width - 20, mascotY + mascotYOffset, WHITE);
                                     DrawTextEx(customFont, TextFormat("%d", i), (Vector2){ screenWidth / 2 - 10, screenHeight / 2 - 10 }, 50, 1, BLACK);
                                     EndDrawing();
                                     WaitTime(1.0f);
@@ -441,70 +417,23 @@ int main()  {
                 //     fruitsMissed++;
                 // }
             }
-            else
-            {
-                if (darkTwist)
-                {
-                    DrawTextEx(customFont, "The game has taken a dark twist...", (Vector2){ screenWidth / 2 - MeasureTextEx(customFont, "The game has taken a dark twist...", 32, 1).x / 2, screenHeight / 2 - 10 }, 32, 1, BLACK);
-                }
-                else
-                {
-                    DrawTextEx(customFont, "Game Over!", (Vector2){ screenWidth / 2 - MeasureTextEx(customFont, "Game Over!", 32, 1).x / 2, screenHeight / 2 - 10 }, 32, 1, BLACK);
-                }
-
-                DrawTextEx(customFont, "Press R to restart", (Vector2){ screenWidth / 2 - MeasureTextEx(customFont, "Press R to restart", 20, 1).x / 2, screenHeight / 2 + 40 }, 20, 1, BLACK);
-
-                if (IsKeyPressed(KEY_R))
-                {
-                    gameStarted = false;
-                    gameOver = false;
-                    fruitsCaught = 0;
-                    fruitsMissed = 0;
-                    darkTwist = false;
-                }
-            }
+            // else
+            // {
+            //     if (darkTwist)
+                
+            // }
         }
 
         else if (gameState == INFO) {
-            DrawTextEx(customFont, "Information about the game", (Vector2){ screenWidth / 2 - MeasureTextEx(customFont, "Information about the game", 32, 1).x / 2, screenHeight / 2 - 100 }, 32, 1, BLACK);
-            DrawTextEx(customFont, "This game was developed by Lawrence Lian anak Matius Ding (102789563).", (Vector2){ screenWidth / 2 - MeasureTextEx(customFont, "This game was developed by Lawrence Lian anak Matius Ding (102789563).", 20, 1).x / 2, screenHeight / 2 - 50 }, 20, 1, BLACK);
-            DrawTextEx(customFont, "It is for my Introduction to Programming Project", (Vector2){ screenWidth / 2 - MeasureTextEx(customFont, "It is for my Introduction to Programming Project", 20, 1).x / 2, screenHeight / 2 - 20 }, 20, 1, BLACK);
-            DrawTextEx(customFont, "The objective is to catch as many fruits as possible and that's it...", (Vector2){ screenWidth / 2 - MeasureTextEx(customFont, "The objective is to catch as many fruits as possible and that's it...", 20, 1).x / 2, screenHeight / 2 + 10 }, 20, 1, BLACK);
-            DrawTextEx(customFont, "Press ESC or click Back to return to the menu.", (Vector2){ screenWidth / 2 - MeasureTextEx(customFont, "Press ESC or click Back to return to the menu.", 20, 1).x / 2, screenHeight / 2 + 50 }, 20, 1, BLACK);
-
-            // Draw Back button
-            Rectangle backButton = { screenWidth / 2 - 100, screenHeight / 2 + 100, 200, 50 };
-            Vector2 mousePosition = GetMousePosition();
-
-            // Draw and handle hover effect for back button
-            if (CheckCollisionPointRec(mousePosition, backButton)) {
-                DrawRectangleRec(backButton, LIGHTGRAY);
-                DrawRectangleLinesEx(backButton, 2, BLACK);
-                DrawTextEx(customFont, "Back", (Vector2){ backButton.x + 70, backButton.y + 10 }, 30, 1, BLACK);
-            } else {
-                DrawRectangleRec(backButton, GRAY);
-                DrawTextEx(customFont, "Back", (Vector2){ backButton.x + 70, backButton.y + 10 }, 30, 1, BLACK);
-            }
-
-            // Check if Back button is clicked or ESC is pressed
-            if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && CheckCollisionPointRec(mousePosition, backButton)) {
-                gameState = MENU;
-            }
-            if (IsKeyPressed(KEY_ESCAPE)) {
-                gameState = MENU;
-            }
+            DrawInfo(customFont, screenWidth, screenHeight, btnClick, &gameState);
         }
 
         EndDrawing();
     }
 
     // De-Initialization
-    StopMusicStream(menuMusic);
-    UnloadFont(customFont);
-    UnloadTexture(menuBackground);
-    UnloadSound(typingSound);
-    CloseAudioDevice(); // Close the audio device
-    CloseWindow();
+    void DeinitializeGame(Texture2D menuBackground, Music menuMusic, Sound typingSound, Sound btnClick, Font customFont, Texture2D overworldBackground, Texture2D grass, Music overworldMusic, Music overworldMusic2, Music overworldMusic3, Texture2D playerOverworldIdle, Texture2D playerOverworldRunLeft, Texture2D playerOverworldRunRight, Sound voicelineSounds[3]);
+
 
     return 0;
 }
