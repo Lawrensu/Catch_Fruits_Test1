@@ -231,7 +231,7 @@ int main()  {
 
 
     // Load Horror Sound
-    jumpscareSound = LoadSound("audios/nightmare_jumpscare.wav");
+    jumpscareSound = LoadSound("audios/nightmare_jumpscare.ogg");
 
 
     GameState gameState = MENU;
@@ -239,6 +239,36 @@ int main()  {
     while (!WindowShouldClose()) {
     UpdateMusicStream(menuMusic);
     elapsedTime += GetFrameTime();
+
+    if (IsKeyPressed(KEY_P)) {
+        if (gameState == GAME || gameState == INFO) {
+            gameState = MENU;
+            // Reset game variables
+            gameStarted = false;
+            gameOver = false;
+            fruitsCaught = 0;
+            fruitsMissed = 0;
+            initialFruitCount = 1;
+            for (int i = 0; i < 10; i++) {
+                fruitSpeeds[i] = (float)(rand() % 2 + 1) * 0.5f; // Reset fruit speeds
+                fruitPositions[i].y = -(rand() % 800); // Reset fruit positions
+                fruitPositions[i].x = rand() % (screenWidth - 32);
+            }
+            mascotTexture = mascotNormal; // Reset mascot texture
+            currentVoiceline = NULL; // Reset current voiceline
+            charIndex = 0; // Reset typing effect
+            charTime = 0.0f; // Reset typing effect timer
+            voicelinePlaying = false; // Reset voiceline playing state
+            voicelineDelayTimer = 0.0f; // Reset voiceline delay timer
+
+            // Stop any currently playing voicelines
+            for (int i = 0; i < 7; i++) {
+                StopSound(voicelineSounds[i]);
+            }
+        } else if (gameState == MENU) {
+            break; // Exit the loop to close the window
+        }
+    }
 
     if (gameState == MENU) {
         glitchTimer += GetFrameTime();

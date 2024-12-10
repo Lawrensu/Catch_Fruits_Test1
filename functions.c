@@ -27,7 +27,7 @@ void DrawInfo(Font customFont, int screenWidth, int screenHeight, Sound btnClick
     DrawTextEx(customFont, "This game was developed by Lawrence Lian anak Matius Ding (102789563).", (Vector2){ screenWidth / 2 - MeasureTextEx(customFont, "This game was developed by Lawrence Lian anak Matius Ding (102789563).", 20, 1).x / 2, screenHeight / 2 - 50 }, 20, 1, BLACK);
     DrawTextEx(customFont, "It is for my Introduction to Programming Project", (Vector2){ screenWidth / 2 - MeasureTextEx(customFont, "It is for my Introduction to Programming Project", 20, 1).x / 2, screenHeight / 2 - 20 }, 20, 1, BLACK);
     DrawTextEx(customFont, "The objective is to catch as many fruits as possible and that's it...", (Vector2){ screenWidth / 2 - MeasureTextEx(customFont, "The objective is to catch as many fruits as possible and that's it...", 20, 1).x / 2, screenHeight / 2 + 10 }, 20, 1, BLACK);
-    DrawTextEx(customFont, "Press ESC or click Back to return to the menu.", (Vector2){ screenWidth / 2 - MeasureTextEx(customFont, "Press ESC or click Back to return to the menu.", 20, 1).x / 2, screenHeight / 2 + 50 }, 20, 1, BLACK);
+    DrawTextEx(customFont, "Press P or click Back to return to the menu.", (Vector2){ screenWidth / 2 - MeasureTextEx(customFont, "Press P or click Back to return to the menu.", 20, 1).x / 2, screenHeight / 2 + 50 }, 20, 1, BLACK);
 
     // Draw Back button
     Rectangle backButton = { screenWidth / 2 - 100, screenHeight / 2 + 100, 200, 50 };
@@ -48,7 +48,7 @@ void DrawInfo(Font customFont, int screenWidth, int screenHeight, Sound btnClick
         *gameState = MENU;
         PlaySound(btnClick);
     }
-    if (IsKeyPressed(KEY_ESCAPE)) {
+    if (IsKeyPressed(KEY_P)) {
         *gameState = MENU;
         PlaySound(btnClick);
     }
