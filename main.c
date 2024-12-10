@@ -16,24 +16,39 @@ typedef enum {
 
 // Main game function
 int main()  {
+    // Initialization Stuff
 
-    // Music and sound effects
+    // Menu sound
     Music menuMusic;
+    Sound typingSound;
+    Sound btnClick;
+
+    // In-Game Sound
+    Sound fruitCaughtSound;
+    Sound gamePause;
+    Sound playerCollision;
+
+    // Overworld Textures
+    Texture2D menuBackground;
+
+    // Overworld Sound
     Music overworldMusic; // Background music for the overworld normal
     Music overworldMusic2; // Background music for the overworld mascot slightly angry
     Music overworldMusic3; // Background music for the overworld mascot angry
+
+    // Dark Twist Textures
+
+
+    // Dark Twist Sound
     Music darkMusic; // Background music for the dark twist
-    Sound typingSound;
+    Sound darkTwistTransitionSound; // Sound effect for the transition to the dark twist
+    Sound darkTwistHeartbeat; // Sound effect for the dark twist heartbeat
+    Sound darkTwistBreathing; // Sound effect for the dark twist breathing
 
-    // Textures
-    Texture2D menuBackground;
-    Texture2D groundTexture = LoadTexture("textures/ground.png");
-    Texture2D skyTexture = LoadTexture("textures/sky.png");
-
-    // Player
+    // Player Textures
     Texture2D playerTexture = LoadTexture("textures/player.png");
 
-    // Mascot
+    // Mascot Textures
     Texture2D mascotTexture = LoadTexture("textures/mascot.png");
 
     int voicelineIndex = 0;
@@ -64,35 +79,15 @@ int main()  {
     PlayMusicStream(menuMusic);
     SetMusicVolume(menuMusic, 0.5f);
 
-    // Mascot's Voicelines
-    Sound voicelineSounds[3];
-    voicelineSounds[0] = LoadSound("audios/Voicelines/Mascot/welcome.wav");
-    voicelineSounds[1] = LoadSound("audios/Voicelines/Mascot/good_luck.wav");
-    voicelineSounds[2] = LoadSound("audios/Voicelines/Mascot/get_ready.wav");
-
-    // Check if voicelines are loaded
-    for (int i = 0; i < 3; i++) {
-        if (voicelineSounds[i].frameCount == 0) {
-            printf("Failed to load voiceline %d\n", i);
-        } else {
-            printf("Loaded voiceline %d\n", i);
-        }
-    }
-    float voicelineDelay = 0.5f; // Delay between voicelines in seconds
-    float voicelineDelayTimer = 0.0f;
-    bool voicelinePlaying = false;
-
-    // Load custom font
+    // Load custom font for the game
     Font customFont = LoadFontEx("fonts/BitPotion.ttf", 32, 0, 0);
 
-    // Menu Background initialization
-    menuBackground = LoadTexture("textures_audios/pfp.png");
+    // Menu Stuff
+    menuBackground = LoadTexture("textures_audios/pfp.png"); // Load the menu background
+    btnClick = LoadSound("audios/btnClicked.wav"); // Load button click sound
+    const char *titleText = "Catch the Fruits"; // Title text
 
-    // Title text
-    const char *titleText = "Catch the Fruits";
-
-    // Load typing sound
-    typingSound = LoadSound("audios/menuVoice.ogg");
+    typingSound = LoadSound("audios/menuVoice.ogg"); // Load typing sound
     SetSoundVolume(typingSound, 0.25f); // Set volume to 25%
     
     // Array of menu texts
@@ -114,8 +109,7 @@ int main()  {
     };
     int chatTextCount = sizeof(menuTexts) / sizeof(menuTexts[0]);
     const char *currentChatText = menuTexts[0]; // Initial chat text
-
-    int fontSize = 20;
+    
     int fontTitleSize = 75;
     int fontChatSize = 25; // Larger font size for chat text
     int yOffset = 50;
@@ -130,6 +124,13 @@ int main()  {
     int textMenuWidth = textMenuSize.x;
     int textMenuHeight = textMenuSize.y;
 
+    // Variables for glitch effect
+    bool glitchEffect = false;
+    float glitchTimer = 0.0f;
+    float glitchDuration = 0.1f; // Duration of the glitch effect
+    float glitchInterval = 10.0f; // Interval between glitch effects
+    float glitchEffectTimer = 0.0f; // Timer for the glitch effect
+
     // Game Variables
     bool showChat = false; // State variable to track if the chat box should be displayed
     float elapsedTime = 0.0f;
@@ -139,6 +140,7 @@ int main()  {
 
     srand(time(NULL)); // Seed the random number generator
 
+    // In-Game Stuff
     // Variables for the game
     bool gameStarted = false;
     bool gameOver = false;
@@ -146,12 +148,40 @@ int main()  {
     int fruitsMissed = 0;
     bool darkTwist = false;
 
-    // Variables for glitch effect
-    bool glitchEffect = false;
-    float glitchTimer = 0.0f;
-    float glitchDuration = 0.1f; // Duration of the glitch effect
-    float glitchInterval = 10.0f; // Interval between glitch effects
-    float glitchEffectTimer = 0.0f; // Timer for the glitch effect
+    // In-Game Sound
+    fruitCaughtSound = LoadSound("audios/catch.wav");
+    gamePause = LoadSound("audios/pause.wav");
+    playerCollision = LoadSound("audios/playerCollision.wav");
+
+    // Mascot's Voicelines
+    Sound voicelineSounds[3];
+    voicelineSounds[0] = LoadSound("audios/Voicelines/Mascot/welcome.wav");
+    voicelineSounds[1] = LoadSound("audios/Voicelines/Mascot/good_luck.wav");
+    voicelineSounds[2] = LoadSound("audios/Voicelines/Mascot/get_ready.wav");
+
+    // Check if voicelines are loaded
+    for (int i = 0; i < 3; i++) {
+        if (voicelineSounds[i].frameCount == 0) {
+            printf("Failed to load voiceline %d\n", i);
+        } else {
+            printf("Loaded voiceline %d\n", i);
+        }
+    }
+    float voicelineDelay = 0.5f; // Delay between voicelines in seconds
+    float voicelineDelayTimer = 0.0f;
+    bool voicelinePlaying = false;
+
+    // Overworld Sound
+    overworldMusic = LoadMusicStream("audios/BGM/overworldMusic1.ogg");
+    overworldMusic2 = LoadMusicStream("audios/BGM/overworldMusic2.ogg");
+    overworldMusic3 = LoadMusicStream("audios/BGM/overworldMusic3.ogg");
+
+    // Dark Twist Sound
+    darkMusic = LoadMusicStream("audios/BGM/finale.ogg");
+    darkTwistTransitionSound = LoadSound("audios/BGM/darkTwistTransition.ogg");
+    darkTwistHeartbeat = LoadSound("audios/BGM/heartbeat.ogg");
+    darkTwistBreathing = LoadSound("audios/BGM/breathingSlow.wav");
+
 
     GameState gameState = MENU;
 
