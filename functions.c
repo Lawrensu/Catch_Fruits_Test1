@@ -80,8 +80,92 @@ void InitializeGame(Texture2D *menuBackground, Music *menuMusic, Sound *typingSo
     *customFont = LoadFontEx("fonts/BitPotion.ttf", 32, 0, 0);
 }
 
+// Player Movement
+void UpdatePlayerMovement(Vector2 *playerPosition, Vector2 *playerVelocity, float acceleration, float maxSpeed, float friction, int screenWidth, Texture2D *playerTexture, Texture2D playerOverworldRunLeft, Texture2D playerOverworldRunRight, Texture2D playerOverworldIdle, Sound playerRun) {
+    bool isRunning = false;
+
+    // Handle input for acceleration
+    if (IsKeyDown(KEY_A) || IsKeyDown(KEY_LEFT)) {
+        playerVelocity->x -= acceleration;
+        *playerTexture = playerOverworldRunLeft;
+        isRunning = true;
+    }
+    if (IsKeyDown(KEY_D) || IsKeyDown(KEY_RIGHT)) {
+        playerVelocity->x += acceleration;
+        *playerTexture = playerOverworldRunRight;
+        isRunning = true;
+    }
+
+    // Apply friction
+    playerVelocity->x *= friction;
+
+    // Clamp velocity to max speed
+    if (playerVelocity->x > maxSpeed) {
+        playerVelocity->x = maxSpeed;
+    }
+    if (playerVelocity->x < -maxSpeed) {
+        playerVelocity->x = -maxSpeed;
+    }
+
+    // Update player position
+    playerPosition->x += playerVelocity->x;
+
+    // Clamp player position to screen bounds
+    if (playerPosition->x < 0) {
+        playerPosition->x = 0;
+    }
+    if (playerPosition->x > screenWidth - playerTexture->width) {
+        playerPosition->x = screenWidth - playerTexture->width;
+    }
+
+    // Set idle texture if no movement
+    if (!isRunning) {
+        *playerTexture = playerOverworldIdle;
+    } else {
+        // Play running sound
+        if (!IsSoundPlaying(playerRun)) {
+            PlaySound(playerRun);
+        }
+    }
+}
+
+// Random Fruits Generator
+void GenerateFruits(Vector2 *fruitPositions, int fruitCount, int screenWidth) {
+    for (int i = 0; i < fruitCount; i++) {
+        fruitPositions[i].x = rand() % (screenWidth - 32); // Assuming fruit width is 32
+        fruitPositions[i].y = -(rand() % 800); // Start above the screen
+    }
+}
+
+// Update Fruit Position
+void UpdateFruitPositions(Vector2 *fruitPositions, int fruitCount, float *fruitSpeeds, int screenWidth, int screenHeight, int fruitHeight, int *fruitsCaught, int *fruitsMissed, Vector2 playerPosition, int playerWidth, int playerHeight, bool *gameOver, Sound fruitCaughtSound) {
+    for (int i = 0; i < fruitCount; i++) {
+        fruitPositions[i].y += fruitSpeeds[i];
+
+        // Check if the fruit is caught by the player
+        if (CheckCollisionRecs((Rectangle){fruitPositions[i].x, fruitPositions[i].y, 32, fruitHeight}, (Rectangle){playerPosition.x, playerPosition.y, playerWidth, playerHeight})) {
+            (*fruitsCaught)++;
+            PlaySound(fruitCaughtSound); // Play the fruit caught sound
+            fruitPositions[i].y = -(rand() % 800); // Reset fruit position
+            fruitPositions[i].x = rand() % (screenWidth - 32);
+        }
+
+        // Check if the fruit hits the ground
+        if (fruitPositions[i].y > screenHeight - fruitHeight) {
+            (*fruitsMissed)++;
+            fruitPositions[i].y = -(rand() % 800); // Reset fruit position
+            fruitPositions[i].x = rand() % (screenWidth - 32);
+
+            // Check for game over condition
+            if (*fruitsMissed >= 7) {
+                *gameOver = true;
+            }
+        }
+    }
+}
+
 // Deinitialize game
-void DeinitializeGame(Texture2D menuBackground, Music menuMusic, Sound typingSound, Sound btnClick, Font customFont, Texture2D overworldBackground, Texture2D grass, Music overworldMusic, Music overworldMusic2, Music overworldMusic3, Texture2D playerOverworldIdle, Texture2D playerOverworldRunLeft, Texture2D playerOverworldRunRight, Sound voicelineSounds[3]) {
+void DeinitializeGame(Texture2D menuBackground, Music menuMusic, Sound typingSound, Sound btnClick, Font customFont, Texture2D overworldBackground, Texture2D grass, Music overworldMusic, Music overworldMusic2, Music overworldMusic3, Texture2D playerOverworldIdle, Texture2D playerOverworldRunLeft, Texture2D playerOverworldRunRight, Texture2D fruits[], int fruitCount, Texture2D mascotNormal, Texture2D mascotAngry, Texture2D mascotVeryAngry1, Texture2D mascotVeryAngry2, Texture2D mascotJumpscare, Sound voicelineSounds[3]) {
     UnloadTexture(menuBackground);
     UnloadMusicStream(menuMusic);
     UnloadSound(typingSound);
@@ -98,7 +182,17 @@ void DeinitializeGame(Texture2D menuBackground, Music menuMusic, Sound typingSou
     UnloadTexture(playerOverworldIdle);
     UnloadTexture(playerOverworldRunLeft);
     UnloadTexture(playerOverworldRunRight);
-    
+
+    for (int i = 0; i < fruitCount; i++) {
+        UnloadTexture(fruits[i]);
+    }
+
+    UnloadTexture(mascotNormal);
+    UnloadTexture(mascotAngry);
+    UnloadTexture(mascotVeryAngry1);
+    UnloadTexture(mascotVeryAngry2);
+    UnloadTexture(mascotJumpscare);
+
     for (int i = 0; i < 3; i++) {
         UnloadSound(voicelineSounds[i]);
     }
