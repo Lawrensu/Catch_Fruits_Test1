@@ -25,6 +25,7 @@ int main()  {
     Sound fruitCaughtSound;
     Sound gamePause;
     Sound playerRun;
+    Sound countdownSound;
 
     // Overworld Textures
     Texture2D overworldBg;
@@ -142,11 +143,17 @@ int main()  {
     fruitCaughtSound = LoadSound("audios/catch.wav");
     gamePause = LoadSound("audios/pause.wav");
     playerRun = LoadSound("audios/mc_dirt_run.ogg");
+    countdownSound = LoadSound("audios/countdown.ogg");
 
     // Overworld Sound
     overworldMusic = LoadMusicStream("audios/BGM/overworldMusic1.ogg");
     overworldMusic2 = LoadMusicStream("audios/BGM/overworldMusic2.ogg");
     overworldMusic3 = LoadMusicStream("audios/BGM/overworldMusic3.ogg");
+
+    // Set Overworld Music Volume
+    SetMusicVolume(overworldMusic, 0.3f); // Set volume to 30%
+    SetMusicVolume(overworldMusic2, 0.3f); // Set volume to 30%
+    SetMusicVolume(overworldMusic3, 0.3f); // Set volume to 30%
 
     // Load Overworld Textures
     overworldBg = LoadTexture("textures/world/overworld_bg.png");
@@ -238,8 +245,12 @@ int main()  {
 
     while (!WindowShouldClose()) {
     UpdateMusicStream(menuMusic);
+    UpdateMusicStream(overworldMusic);
+    UpdateMusicStream(overworldMusic2);
+    UpdateMusicStream(overworldMusic3);
     elapsedTime += GetFrameTime();
 
+    // Handle P key press to return to main menu and reset the game state
     if (IsKeyPressed(KEY_P)) {
         if (gameState == GAME || gameState == INFO) {
             gameState = MENU;
@@ -265,6 +276,12 @@ int main()  {
             for (int i = 0; i < 7; i++) {
                 StopSound(voicelineSounds[i]);
             }
+
+            // Stop in-game music and play main menu music
+            StopMusicStream(overworldMusic);
+            StopMusicStream(overworldMusic2);
+            StopMusicStream(overworldMusic3);
+            PlayMusicStream(menuMusic);
         } else if (gameState == MENU) {
             break; // Exit the loop to close the window
         }
@@ -380,6 +397,8 @@ int main()  {
                 if (CheckCollisionPointRec(mousePosition, playButton)) {
                     PlaySound(btnClick);
                     gameState = GAME;
+                    StopMusicStream(menuMusic);
+                    PlayMusicStream(overworldMusic);
                 } else if (CheckCollisionPointRec(mousePosition, infoButton)) {
                     PlaySound(btnClick);
                     gameState = INFO;
@@ -420,7 +439,7 @@ int main()  {
 
             // Update and draw fruits
             if (gameStarted) {
-                UpdateFruitPositions(fruitPositions, initialFruitCount, fruitSpeeds, screenWidth, screenHeight, fruits[0].height, &fruitsCaught, &fruitsMissed, playerPosition, playerOverworldIdle.width * playerScale, playerOverworldIdle.height * playerScale, &gameOver, fruitCaughtSound);
+                UpdateFruitPositions(fruitPositions, initialFruitCount, fruitSpeeds, screenWidth, screenHeight, fruits[0].height, &fruitsCaught, &fruitsMissed, playerPosition, playerOverworldIdle.width * playerScale, playerOverworldIdle.height * playerScale, &gameOver, fruitCaughtSound, mascotJumpscare, jumpscareSound, customFont, voicelineSounds, 7, pentagram);
 
                 for (int i = 0; i < initialFruitCount; i++) {
                     DrawTextureEx(fruits[i % 10], fruitPositions[i], 0.0f, 1.5f, WHITE); // Scale the fruits by 1.5
@@ -455,6 +474,8 @@ int main()  {
                     PlaySound(voicelineSounds[3]); // Play new voiceline
                     charIndex = 0; // Reset typing effect
                     charTime = 0.0f;
+                    StopMusicStream(overworldMusic);
+                    PlayMusicStream(overworldMusic2);
                 }
             } else if (fruitsMissed >= 5) {
                 if (mascotTexture.id != mascotVeryAngry1.id && mascotTexture.id != mascotVeryAngry2.id) {
@@ -463,6 +484,8 @@ int main()  {
                     PlaySound(voicelineSounds[4]); // Play new voiceline
                     charIndex = 0; // Reset typing effect
                     charTime = 0.0f;
+                    StopMusicStream(overworldMusic2);
+                    PlayMusicStream(overworldMusic3);
                 }
             }
 
@@ -559,14 +582,18 @@ int main()  {
                                 briefingDone = true;
 
                                 // Start countdown
+                                PlaySound(countdownSound); // Play countdown sound
                                 for (int i = 3; i > 0; i--) {
                                     BeginDrawing();
                                     ClearBackground(RAYWHITE);
-                                    DrawWorld(overworldBg, overworldGrass, screenWidth, screenHeight); 
+                                    DrawWorld(overworldBg, overworldGrass, screenWidth, screenHeight);
+                                    DrawTextureEx(playerTexture, playerPosition, 0.0f, playerScale, WHITE);
+                                    DrawTextureEx(mascotTexture, (Vector2){ screenWidth - mascotTexture.width * mascotScale - 20, mascotY + mascotYOffset }, 0.0f, mascotScale, WHITE);
                                     DrawTextEx(customFont, TextFormat("%d", i), (Vector2){ screenWidth / 2 - 10, screenHeight / 2 - 10 }, 50, 1, BLACK);
                                     EndDrawing();
                                     WaitTime(1.0f);
                                 }
+                                StopSound(countdownSound); // Stop countdown sound
 
                                 gameStarted = true;
                             }
@@ -584,35 +611,7 @@ int main()  {
             }
         }
 
-        // else if (!gameOver)
-        // {
-        //     // Game logic for catching fruits
-        //     // If the player misses more than 7 fruits, trigger the dark twist
-        //     if (fruitsMissed >= 7)
-        //     {
-        //         gameOver = true;
-        //     }
 
-        //     // Update game logic here
-        //     // ...
-
-        //     // Example: If the player catches a fruit
-        //     // if (/* condition for catching a fruit */)
-        //     // {
-        //     //     fruitsCaught++;
-        //     // }
-        //     // // Example: If the player misses a fruit
-        //     // else if (/* condition for missing a fruit */)
-        //     // {
-        //     //     fruitsMissed++;
-        //     // }
-        // }
-        // else
-        // {
-        //     if (darkTwist)
-                
-        // }
-            // }
 
         else if (gameState == INFO) {
             DrawInfo(customFont, screenWidth, screenHeight, btnClick, &gameState);
@@ -623,7 +622,7 @@ int main()  {
     }
 
     // De-Initialization
-    DeinitializeGame(menuBackground, menuMusic, typingSound, btnClick, customFont, overworldBg, overworldGrass, overworldMusic, overworldMusic2, overworldMusic3, playerOverworldIdle, playerOverworldRunLeft, playerOverworldRunRight, fruits, fruitCount, mascotNormal, mascotAngry, mascotVeryAngry1, mascotVeryAngry2, mascotJumpscare, voicelineSounds);
+    DeinitializeGame(menuBackground, menuMusic, typingSound, btnClick, customFont, overworldBg, overworldGrass, overworldMusic, overworldMusic2, overworldMusic3, playerOverworldIdle, playerOverworldRunLeft, playerOverworldRunRight, fruits, fruitCount, mascotNormal, mascotAngry, mascotVeryAngry1, mascotVeryAngry2, mascotJumpscare, pentagram, voicelineSounds, 7, fruitCaughtSound, gamePause, playerRun, countdownSound, jumpscareSound);
 
     return 0;
 }

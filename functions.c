@@ -1,6 +1,8 @@
 #include "functions.h"
 #include <stdlib.h> // For rand()
 #include <string.h>
+#include <stdio.h> // For FILE, fopen, fprintf, fclose
+
 
 // Random red pixels
 void DrawRandomRedPixels(int count, int screenWidth, int screenHeight) {
@@ -43,7 +45,7 @@ void DrawInfo(Font customFont, int screenWidth, int screenHeight, Sound btnClick
         DrawTextEx(customFont, "Back", (Vector2){ backButton.x + 70, backButton.y + 10 }, 30, 1, BLACK);
     }
 
-    // Check if Back button is clicked or ESC is pressed
+    // Check if Back button is clicked or P is pressed
     if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && CheckCollisionPointRec(mousePosition, backButton)) {
         *gameState = MENU;
         PlaySound(btnClick);
@@ -138,7 +140,7 @@ void GenerateFruits(Vector2 *fruitPositions, int fruitCount, int screenWidth) {
 }
 
 // Update Fruit Position
-void UpdateFruitPositions(Vector2 *fruitPositions, int fruitCount, float *fruitSpeeds, int screenWidth, int screenHeight, int fruitHeight, int *fruitsCaught, int *fruitsMissed, Vector2 playerPosition, int playerWidth, int playerHeight, bool *gameOver, Sound fruitCaughtSound) {
+void UpdateFruitPositions(Vector2 *fruitPositions, int fruitCount, float *fruitSpeeds, int screenWidth, int screenHeight, int fruitHeight, int *fruitsCaught, int *fruitsMissed, Vector2 playerPosition, int playerWidth, int playerHeight, bool *gameOver, Sound fruitCaughtSound, Texture2D mascotJumpscare, Sound jumpscareSound, Font customFont, Sound voicelineSounds[], int voicelineCount, Texture2D pentagram) {
     for (int i = 0; i < fruitCount; i++) {
         fruitPositions[i].y += fruitSpeeds[i];
 
@@ -159,13 +161,103 @@ void UpdateFruitPositions(Vector2 *fruitPositions, int fruitCount, float *fruitS
             // Check for game over condition
             if (*fruitsMissed >= 7) {
                 *gameOver = true;
+                TriggerBadEnding(mascotJumpscare, jumpscareSound, customFont, screenWidth, screenHeight, voicelineSounds, voicelineCount, pentagram);
             }
         }
     }
 }
 
+// Bad Ending
+void TriggerBadEnding(Texture2D mascotJumpscare, Sound jumpscareSound, Font customFont, int screenWidth, int screenHeight, Sound voicelineSounds[], int voicelineCount, Texture2D pentagram) {
+    // Stop any currently playing voicelines
+    for (int i = 0; i < voicelineCount; i++) {
+        StopSound(voicelineSounds[i]);
+    }
+
+    // Display "I warned you. Consequences" message with typing effect
+    const char *warningMessage = "I warned you. Consequences";
+    int charIndex = 0;
+    float charTime = 0.0f;
+    PlaySound(voicelineSounds[5]); // Play the voiceline sound
+    while (charIndex < strlen(warningMessage)) {
+        ClearBackground(BLACK);
+        DrawTextEx(customFont, TextSubtext(warningMessage, 0, charIndex), (Vector2){ screenWidth / 2 - MeasureTextEx(customFont, warningMessage, 32, 1).x / 2, screenHeight / 2 - 50 }, 32, 1, RED);
+        EndDrawing();
+        charTime += GetFrameTime();
+        if (charTime >= 0.05f) { // Adjust the typing speed here
+            charTime = 0.0f;
+            charIndex++;
+        }
+    }
+    WaitTime(3.0f); // Display the message for 3 seconds
+
+    // Display pentagram texture
+    ClearBackground(BLACK);
+    DrawTexture(pentagram, (screenWidth - pentagram.width) / 2, (screenHeight - pentagram.height) / 2, WHITE);
+    EndDrawing();
+    WaitTime(2.0f); // Display the pentagram for 2 seconds
+
+    // Transition to black screen and play jumpscare
+    ClearBackground(BLACK);
+    DrawTextureEx(mascotJumpscare, (Vector2){ (screenWidth - mascotJumpscare.width * 4.0f) / 2, (screenHeight - mascotJumpscare.height * 4.0f) / 2 }, 0.0f, 4.0f, WHITE);
+    SetSoundVolume(jumpscareSound, 3.0f); // Make the jumpscare sound really loud
+    PlaySound(jumpscareSound); // Play jumpscare sound
+    EndDrawing();
+    WaitTime(5.0f); // Display the jumpscare for 5 seconds
+
+    // Display "You are a failed vessel." message with typing effect
+    const char *failedMessage = "You are a failed vessel.";
+    charIndex = 0;
+    charTime = 0.0f;
+    while (charIndex < strlen(failedMessage)) {
+        ClearBackground(BLACK);
+        DrawTextEx(customFont, TextSubtext(failedMessage, 0, charIndex), (Vector2){ screenWidth / 2 - MeasureTextEx(customFont, failedMessage, 32, 1).x / 2, screenHeight / 2 - 50 }, 32, 1, RED);
+        EndDrawing();
+        charTime += GetFrameTime();
+        if (charTime >= 0.05f) { // Adjust the typing speed here
+            charTime = 0.0f;
+            charIndex++;
+        }
+    }
+    WaitTime(3.0f); // Display the message for 3 seconds
+
+    // Display message asking the player to check their game folder with typing effect
+    const char *checkFolderMessage = "Check your game folder.";
+    charIndex = 0;
+    charTime = 0.0f;
+    while (charIndex < strlen(checkFolderMessage)) {
+        ClearBackground(BLACK);
+        DrawTextEx(customFont, TextSubtext(checkFolderMessage, 0, charIndex), (Vector2){ screenWidth / 2 - MeasureTextEx(customFont, checkFolderMessage, 32, 1).x / 2, screenHeight / 2 - 50 }, 32, 1, RED);
+        EndDrawing();
+        charTime += GetFrameTime();
+        if (charTime >= 0.05f) { // Adjust the typing speed here
+            charTime = 0.0f;
+            charIndex++;
+        }
+    }
+    WaitTime(3.0f); // Display the message for 3 seconds
+
+    // Create the ritual_log.txt file
+    FILE *file = fopen("ritual_log.txt", "w");
+    if (file != NULL) {
+        fprintf(file, "Ritual Entry %d. FAILURE.\n", rand() % 1000);
+        fprintf(file, "Subject: the person behind this screen.\n");
+        fprintf(file, "Status: Vessel integrity compromised. Corrupted mind. Incomplete bonding.\n\n");
+        fprintf(file, "Error Log:\n\n");
+        fprintf(file, "- Blood sigil incomplete.\n");
+        fprintf(file, "- Vessel consciousness resisting.\n");
+        fprintf(file, "- Invocation disrupted by external interference (user actions detected).\n\n");
+        fprintf(file, "Judgment: Vessel rejected. Prepare for the next candidate.\n");
+        fclose(file);
+    }
+
+    // Exit the game
+    CloseWindow();
+    exit(0);
+}
+
 // Deinitialize game
-void DeinitializeGame(Texture2D menuBackground, Music menuMusic, Sound typingSound, Sound btnClick, Font customFont, Texture2D overworldBackground, Texture2D grass, Music overworldMusic, Music overworldMusic2, Music overworldMusic3, Texture2D playerOverworldIdle, Texture2D playerOverworldRunLeft, Texture2D playerOverworldRunRight, Texture2D fruits[], int fruitCount, Texture2D mascotNormal, Texture2D mascotAngry, Texture2D mascotVeryAngry1, Texture2D mascotVeryAngry2, Texture2D mascotJumpscare, Sound voicelineSounds[3]) {
+void DeinitializeGame(Texture2D menuBackground, Music menuMusic, Sound typingSound, Sound btnClick, Font customFont, Texture2D overworldBackground, Texture2D grass, Music overworldMusic, Music overworldMusic2, Music overworldMusic3, Texture2D playerOverworldIdle, Texture2D playerOverworldRunLeft, Texture2D playerOverworldRunRight, Texture2D fruits[], int fruitCount, Texture2D mascotNormal, Texture2D mascotAngry, Texture2D mascotVeryAngry1, Texture2D mascotVeryAngry2, Texture2D mascotJumpscare, Texture2D pentagram, Sound voicelineSounds[], int voicelineCount, Sound fruitCaughtSound, Sound gamePause, Sound playerRun, Sound countdownSound, Sound jumpscareSound) {
     UnloadTexture(menuBackground);
     UnloadMusicStream(menuMusic);
     UnloadSound(typingSound);
@@ -192,10 +284,17 @@ void DeinitializeGame(Texture2D menuBackground, Music menuMusic, Sound typingSou
     UnloadTexture(mascotVeryAngry1);
     UnloadTexture(mascotVeryAngry2);
     UnloadTexture(mascotJumpscare);
+    UnloadTexture(pentagram);
 
-    for (int i = 0; i < 3; i++) {
+    for (int i = 0; i < voicelineCount; i++) {
         UnloadSound(voicelineSounds[i]);
     }
+
+    UnloadSound(fruitCaughtSound);
+    UnloadSound(gamePause);
+    UnloadSound(playerRun);
+    UnloadSound(countdownSound);
+    UnloadSound(jumpscareSound);
 
     CloseAudioDevice();
     CloseWindow();
