@@ -167,6 +167,86 @@ void UpdateFruitPositions(Vector2 *fruitPositions, int fruitCount, float *fruitS
     }
 }
 
+// Good Ending
+void TriggerGoodEnding(Texture2D mascotJumpscare, Sound voicelineSound, Font customFont, int screenWidth, int screenHeight, Sound voicelineSounds[], int voicelineCount) {
+    // Stop any currently playing voicelines
+    for (int i = 0; i < voicelineCount; i++) {
+        StopSound(voicelineSounds[i]);
+    }
+
+    // Display "You are a great vessel." message with typing effect
+    const char *greatVesselMessage = "You are a great vessel.";
+    int charIndex = 0;
+    float charTime = 0.0f;
+    PlaySound(voicelineSound); // Play the voiceline sound
+    while (charIndex < strlen(greatVesselMessage)) {
+        ClearBackground(BLACK);
+        DrawTextEx(customFont, TextSubtext(greatVesselMessage, 0, charIndex), (Vector2){ screenWidth / 2 - MeasureTextEx(customFont, greatVesselMessage, 32, 1).x / 2, screenHeight / 2 - 50 }, 32, 1, RED);
+        EndDrawing();
+        charTime += GetFrameTime();
+        if (charTime >= 0.05f) { // Adjust the typing speed here
+            charTime = 0.0f;
+            charIndex++;
+        }
+    }
+    WaitTime(2.0f); // Display the message for 2 seconds
+
+    // Transition to white screen
+    ClearBackground(WHITE);
+    EndDrawing();
+    WaitTime(1.0f); // Display the white screen for 1 second
+
+    // Display "You proved yourself worthy." message with typing effect
+    const char *worthyMessage = "You proved yourself worthy.";
+    charIndex = 0;
+    charTime = 0.0f;
+    while (charIndex < strlen(worthyMessage)) {
+        ClearBackground(WHITE);
+        DrawTextEx(customFont, TextSubtext(worthyMessage, 0, charIndex), (Vector2){ screenWidth / 2 - MeasureTextEx(customFont, worthyMessage, 32, 1).x / 2, screenHeight / 2 - 50 }, 32, 1, RED);
+        EndDrawing();
+        charTime += GetFrameTime();
+        if (charTime >= 0.05f) { // Adjust the typing speed here
+            charTime = 0.0f;
+            charIndex++;
+        }
+    }
+    WaitTime(2.0f); // Display the message for 2 seconds
+
+    // Display message asking the player to check their game folder with typing effect
+    const char *checkFolderMessage = "Check your game folder.";
+    charIndex = 0;
+    charTime = 0.0f;
+    while (charIndex < strlen(checkFolderMessage)) {
+        ClearBackground(WHITE);
+        DrawTextEx(customFont, TextSubtext(checkFolderMessage, 0, charIndex), (Vector2){ screenWidth / 2 - MeasureTextEx(customFont, checkFolderMessage, 32, 1).x / 2, screenHeight / 2 - 50 }, 32, 1, RED);
+        EndDrawing();
+        charTime += GetFrameTime();
+        if (charTime >= 0.05f) { // Adjust the typing speed here
+            charTime = 0.0f;
+            charIndex++;
+        }
+    }
+    WaitTime(2.0f); // Display the message for 2 seconds
+
+    // Create the ritual_log.txt file
+    FILE *file = fopen("ritual_log.txt", "w");
+    if (file != NULL) {
+        fprintf(file, "Ritual Entry 27. SUCCESS.\n");
+        fprintf(file, "Subject: the person behind the screen.\n");
+        fprintf(file, "Status: Vessel integrity confirmed. Fully bonded.\n\n");
+        fprintf(file, "Completion Log:\n\n");
+        fprintf(file, "- Blood sigil activated.\n");
+        fprintf(file, "- Vessel consciousness subdued. No resistance detected.\n");
+        fprintf(file, "- Invocation flawless. Ascension imminent.\n\n");
+        fprintf(file, "Judgment: Vessel approved. Proceed to Phase II.\n");
+        fclose(file);
+    }
+
+    // Exit the game
+    CloseWindow();
+    exit(0);
+}
+
 // Bad Ending
 void TriggerBadEnding(Texture2D mascotJumpscare, Sound jumpscareSound, Font customFont, int screenWidth, int screenHeight, Sound voicelineSounds[], int voicelineCount, Texture2D pentagram) {
     // Stop any currently playing voicelines
@@ -256,6 +336,8 @@ void TriggerBadEnding(Texture2D mascotJumpscare, Sound jumpscareSound, Font cust
     exit(0);
 }
 
+
+
 // Deinitialize game
 void DeinitializeGame(Texture2D menuBackground, Music menuMusic, Sound typingSound, Sound btnClick, Font customFont, Texture2D overworldBackground, Texture2D grass, Music overworldMusic, Music overworldMusic2, Music overworldMusic3, Texture2D playerOverworldIdle, Texture2D playerOverworldRunLeft, Texture2D playerOverworldRunRight, Texture2D fruits[], int fruitCount, Texture2D mascotNormal, Texture2D mascotAngry, Texture2D mascotVeryAngry1, Texture2D mascotVeryAngry2, Texture2D mascotJumpscare, Texture2D pentagram, Sound voicelineSounds[], int voicelineCount, Sound fruitCaughtSound, Sound gamePause, Sound playerRun, Sound countdownSound, Sound jumpscareSound) {
     UnloadTexture(menuBackground);
@@ -300,18 +382,5 @@ void DeinitializeGame(Texture2D menuBackground, Music menuMusic, Sound typingSou
     CloseWindow();
 }
 
-// Show jumpscare
-void ShowJumpscare(Texture2D jumpscareTexture, int screenWidth, int screenHeight) {
-    ClearBackground(BLACK);
-    DrawTexture(jumpscareTexture, (screenWidth - jumpscareTexture.width) / 2, (screenHeight - jumpscareTexture.height) / 2, WHITE);
-    EndDrawing();
-    WaitTime(2.0f); // Display the jumpscare for 2 seconds
-}
 
-// Show congratulatory message
-void ShowCongratulatoryMessage(Font customFont, int screenWidth, int screenHeight) {
-    ClearBackground(BLACK);
-    DrawTextEx(customFont, "Congratulations. You are a great vessel.", (Vector2){ screenWidth / 2 - MeasureTextEx(customFont, "Congratulations. You are a great vessel.", 32, 1).x / 2, screenHeight / 2 - 50 }, 32, 1, WHITE);
-    EndDrawing();
-    WaitTime(2.0f); // Display the message for 2 seconds
-}
+

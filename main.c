@@ -445,6 +445,12 @@ int main()  {
                     DrawTextureEx(fruits[i % 10], fruitPositions[i], 0.0f, 1.5f, WHITE); // Scale the fruits by 1.5
                 }
 
+                // Check for good ending condition
+                if (fruitsCaught >= targetFruits) {
+                    gameOver = true;
+                    TriggerGoodEnding(mascotJumpscare, voicelineSounds[6], customFont, screenWidth, screenHeight, voicelineSounds, 7);
+                }
+
                 // Increase difficulty over time
                 difficultyTimer += GetFrameTime();
                 if (difficultyTimer >= difficultyIncreaseInterval) {
@@ -610,8 +616,6 @@ int main()  {
                 DrawRandomRedPixels(100, screenWidth, screenHeight); // Add some random red pixels for creepiness
             }
         }
-
-
 
         else if (gameState == INFO) {
             DrawInfo(customFont, screenWidth, screenHeight, btnClick, &gameState);
