@@ -332,7 +332,7 @@ void TriggerBadEnding(Texture2D mascotJumpscare, Sound jumpscareSound, Font cust
         fprintf(file, "- Blood sigil incomplete.\n");
         fprintf(file, "- Vessel consciousness resisting.\n");
         fprintf(file, "- Invocation disrupted by external interference (user actions detected).\n\n");
-        fprintf(file, "Judgment: Vessel rejected. Prepare for the next candidate.\n");
+        fprintf(file, "Judgment: Vessel rejected. Dispose of remains will occur. Prepare for the next candidate.\n");
         fclose(file);
     }
 
