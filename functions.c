@@ -25,14 +25,18 @@ void UpdateTypingEffect(float *charTime, int *charIndex, const char *currentChat
 }
 
 void DrawInfo(Font customFont, int screenWidth, int screenHeight, Sound btnClick, GameState *gameState) {
-    DrawTextEx(customFont, "Information about the game", (Vector2){ screenWidth / 2 - MeasureTextEx(customFont, "Information about the game", 32, 1).x / 2, screenHeight / 2 - 100 }, 32, 1, BLACK);
-    DrawTextEx(customFont, "This game was developed by Lawrence Lian anak Matius Ding (102789563).", (Vector2){ screenWidth / 2 - MeasureTextEx(customFont, "This game was developed by Lawrence Lian anak Matius Ding (102789563).", 20, 1).x / 2, screenHeight / 2 - 50 }, 20, 1, BLACK);
-    DrawTextEx(customFont, "It is for my Introduction to Programming Project", (Vector2){ screenWidth / 2 - MeasureTextEx(customFont, "It is for my Introduction to Programming Project", 20, 1).x / 2, screenHeight / 2 - 20 }, 20, 1, BLACK);
-    DrawTextEx(customFont, "The objective is to catch as many fruits as possible and that's it...", (Vector2){ screenWidth / 2 - MeasureTextEx(customFont, "The objective is to catch as many fruits as possible and that's it...", 20, 1).x / 2, screenHeight / 2 + 10 }, 20, 1, BLACK);
-    DrawTextEx(customFont, "Press P or click Back to return to the menu.", (Vector2){ screenWidth / 2 - MeasureTextEx(customFont, "Press P or click Back to return to the menu.", 20, 1).x / 2, screenHeight / 2 + 50 }, 20, 1, BLACK);
+    DrawTextEx(customFont, "Information about the game", (Vector2){ screenWidth / 2 - MeasureTextEx(customFont, "Information about the game", 32, 1).x / 2, screenHeight / 2 - 150 }, 32, 1, BLACK);
+    DrawTextEx(customFont, "This game was developed by Lawrence Lian anak Matius Ding (102789563).", (Vector2){ screenWidth / 2 - MeasureTextEx(customFont, "This game was developed by Lawrence Lian anak Matius Ding (102789563).", 20, 1).x / 2, screenHeight / 2 - 100 }, 20, 1, BLACK);
+    DrawTextEx(customFont, "It is for my Introduction to Programming Project", (Vector2){ screenWidth / 2 - MeasureTextEx(customFont, "It is for my Introduction to Programming Project", 20, 1).x / 2, screenHeight / 2 - 70 }, 20, 1, BLACK);
+    DrawTextEx(customFont, "The objective is to catch as many fruits as possible and that's it...", (Vector2){ screenWidth / 2 - MeasureTextEx(customFont, "The objective is to catch as many fruits as possible and that's it...", 20, 1).x / 2, screenHeight / 2 - 40 }, 20, 1, BLACK);
+    DrawTextEx(customFont, "Controls:", (Vector2){ screenWidth / 2 - MeasureTextEx(customFont, "Controls:", 24, 1).x / 2, screenHeight / 2 }, 24, 1, BLACK);
+    DrawTextEx(customFont, "Move Left: A or Left Arrow", (Vector2){ screenWidth / 2 - MeasureTextEx(customFont, "Move Left: A or Left Arrow", 20, 1).x / 2, screenHeight / 2 + 30 }, 20, 1, BLACK);
+    DrawTextEx(customFont, "Move Right: D or Right Arrow", (Vector2){ screenWidth / 2 - MeasureTextEx(customFont, "Move Right: D or Right Arrow", 20, 1).x / 2, screenHeight / 2 + 60 }, 20, 1, BLACK);
+    DrawTextEx(customFont, "Return to Menu: P", (Vector2){ screenWidth / 2 - MeasureTextEx(customFont, "Return to Menu: P", 20, 1).x / 2, screenHeight / 2 + 90 }, 20, 1, BLACK);
+    DrawTextEx(customFont, "Press P or click Back to return to the menu.", (Vector2){ screenWidth / 2 - MeasureTextEx(customFont, "Press P or click Back to return to the menu.", 20, 1).x / 2, screenHeight / 2 + 120 }, 20, 1, BLACK);
 
     // Draw Back button
-    Rectangle backButton = { screenWidth / 2 - 100, screenHeight / 2 + 100, 200, 50 };
+    Rectangle backButton = { screenWidth / 2 - 100, screenHeight / 2 + 150, 200, 50 };
     Vector2 mousePosition = GetMousePosition();
 
     // Draw and handle hover effect for back button
@@ -168,17 +172,18 @@ void UpdateFruitPositions(Vector2 *fruitPositions, int fruitCount, float *fruitS
 }
 
 // Good Ending
-void TriggerGoodEnding(Texture2D mascotJumpscare, Sound voicelineSound, Font customFont, int screenWidth, int screenHeight, Sound voicelineSounds[], int voicelineCount) {
+void TriggerGoodEnding(Texture2D mascotJumpscare, Sound voicelineSound, Sound heartbeatSound, Font customFont, int screenWidth, int screenHeight, Sound voicelineSounds[], int voicelineCount) {
     // Stop any currently playing voicelines
     for (int i = 0; i < voicelineCount; i++) {
         StopSound(voicelineSounds[i]);
     }
 
     // Display "You are a great vessel." message with typing effect
-    const char *greatVesselMessage = "You are a great vessel.";
+    const char *greatVesselMessage = "Congratulation. You are a great vessel.";
     int charIndex = 0;
     float charTime = 0.0f;
-    PlaySound(voicelineSound); // Play the voiceline sound
+    PlaySound(voicelineSounds[6]); // Play the voiceline sound
+    PlaySound(heartbeatSound); // Play the heartbeat sound
     while (charIndex < strlen(greatVesselMessage)) {
         ClearBackground(BLACK);
         DrawTextEx(customFont, TextSubtext(greatVesselMessage, 0, charIndex), (Vector2){ screenWidth / 2 - MeasureTextEx(customFont, greatVesselMessage, 32, 1).x / 2, screenHeight / 2 - 50 }, 32, 1, RED);
@@ -189,7 +194,7 @@ void TriggerGoodEnding(Texture2D mascotJumpscare, Sound voicelineSound, Font cus
             charIndex++;
         }
     }
-    WaitTime(2.0f); // Display the message for 2 seconds
+    WaitTime(4.0f); // Display the message for 4 seconds
 
     // Transition to white screen
     ClearBackground(WHITE);
@@ -210,7 +215,7 @@ void TriggerGoodEnding(Texture2D mascotJumpscare, Sound voicelineSound, Font cus
             charIndex++;
         }
     }
-    WaitTime(2.0f); // Display the message for 2 seconds
+    WaitTime(3.0f); // Display the message for 3 seconds
 
     // Display message asking the player to check their game folder with typing effect
     const char *checkFolderMessage = "Check your game folder.";
@@ -336,10 +341,54 @@ void TriggerBadEnding(Texture2D mascotJumpscare, Sound jumpscareSound, Font cust
     exit(0);
 }
 
+// Reset Game State
+void ResetGameState(Vector2 *playerPosition, Vector2 *playerVelocity, float playerScale, int screenWidth, int screenHeight, Vector2 fruitPositions[], float fruitSpeeds[], int fruitCount, int *fruitsCaught, int *fruitsMissed, int *initialFruitCount, int *targetFruits, bool *gameStarted, bool *gameOver, Texture2D *mascotTexture, Texture2D mascotNormal, Sound voicelineSounds[], int voicelineCount, Music menuMusic, Music overworldMusic, Music overworldMusic2, Music overworldMusic3, Texture2D playerOverworldIdle, Texture2D overworldGrass, bool *briefingDone, int *voicelineIndex, const char **currentVoiceline, int *charIndex, float *charTime, bool *voicelinePlaying, float *voicelineDelayTimer) {
+    // Reset player position and velocity
+    *playerPosition = (Vector2){ screenWidth / 2 - playerOverworldIdle.width / 2, screenHeight - playerOverworldIdle.height - overworldGrass.height - 10 };
+    *playerVelocity = (Vector2){ 0, 0 };
+
+    // Reset fruits' positions and speeds
+    for (int i = 0; i < fruitCount; i++) {
+        fruitSpeeds[i] = (float)(rand() % 2 + 1) * 0.5f; // Reset fruit speeds
+        fruitPositions[i].y = -(rand() % 800); // Reset fruit positions
+        fruitPositions[i].x = rand() % (screenWidth - 32);
+    }
+
+    // Reset game state variables
+    *fruitsCaught = 0;
+    *fruitsMissed = 0;
+    *initialFruitCount = 1;
+    *targetFruits = rand() % 50 + 1; // Random number of fruits to gather (1 to 50)
+    *gameStarted = false;
+    *gameOver = false;
+
+    // Reset mascot texture
+    *mascotTexture = mascotNormal;
+
+    // Stop any currently playing voicelines
+    for (int i = 0; i < voicelineCount; i++) {
+        StopSound(voicelineSounds[i]);
+    }
+
+    // Stop in-game music and play main menu music
+    StopMusicStream(overworldMusic);
+    StopMusicStream(overworldMusic2);
+    StopMusicStream(overworldMusic3);
+    PlayMusicStream(menuMusic);
+
+    // Reset voiceline and briefing variables
+    *briefingDone = false;
+    *voicelineIndex = 0;
+    *currentVoiceline = NULL;
+    *charIndex = 0;
+    *charTime = 0.0f;
+    *voicelinePlaying = false;
+    *voicelineDelayTimer = 0.0f;
+}
 
 
 // Deinitialize game
-void DeinitializeGame(Texture2D menuBackground, Music menuMusic, Sound typingSound, Sound btnClick, Font customFont, Texture2D overworldBackground, Texture2D grass, Music overworldMusic, Music overworldMusic2, Music overworldMusic3, Texture2D playerOverworldIdle, Texture2D playerOverworldRunLeft, Texture2D playerOverworldRunRight, Texture2D fruits[], int fruitCount, Texture2D mascotNormal, Texture2D mascotAngry, Texture2D mascotVeryAngry1, Texture2D mascotVeryAngry2, Texture2D mascotJumpscare, Texture2D pentagram, Sound voicelineSounds[], int voicelineCount, Sound fruitCaughtSound, Sound gamePause, Sound playerRun, Sound countdownSound, Sound jumpscareSound) {
+void DeinitializeGame(Texture2D menuBackground, Music menuMusic, Sound typingSound, Sound btnClick, Font customFont, Texture2D overworldBackground, Texture2D grass, Music overworldMusic, Music overworldMusic2, Music overworldMusic3, Texture2D playerOverworldIdle, Texture2D playerOverworldRunLeft, Texture2D playerOverworldRunRight, Texture2D fruits[], int fruitCount, Texture2D mascotNormal, Texture2D mascotAngry, Texture2D mascotVeryAngry1, Texture2D mascotVeryAngry2, Texture2D mascotJumpscare, Texture2D pentagram, Sound voicelineSounds[], int voicelineCount, Sound fruitCaughtSound, Sound gamePause, Sound playerRun, Sound countdownSound, Sound jumpscareSound, Sound heartbeat) {
     UnloadTexture(menuBackground);
     UnloadMusicStream(menuMusic);
     UnloadSound(typingSound);
@@ -377,6 +426,7 @@ void DeinitializeGame(Texture2D menuBackground, Music menuMusic, Sound typingSou
     UnloadSound(playerRun);
     UnloadSound(countdownSound);
     UnloadSound(jumpscareSound);
+    UnloadSound(heartbeat);
 
     CloseAudioDevice();
     CloseWindow();

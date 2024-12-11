@@ -26,6 +26,7 @@ int main()  {
     Sound gamePause;
     Sound playerRun;
     Sound countdownSound;
+    Sound heartbeat;
 
     // Overworld Textures
     Texture2D overworldBg;
@@ -71,6 +72,15 @@ int main()  {
     InitWindow(screenWidth, screenHeight, "Catch_Fruits_Test1.exe");
     InitAudioDevice();
     SetTargetFPS(144);
+
+    // Load the icon image
+    Image icon = LoadImage("textures/apple_logo.png"); 
+
+    // Set the window icon
+    SetWindowIcon(icon);
+
+    // Unload the icon image after setting it
+    UnloadImage(icon);
 
     // Menu Stuff
     InitializeGame(&menuBackground, &menuMusic, &typingSound, &btnClick, &customFont);
@@ -144,6 +154,7 @@ int main()  {
     gamePause = LoadSound("audios/pause.wav");
     playerRun = LoadSound("audios/mc_dirt_run.ogg");
     countdownSound = LoadSound("audios/countdown.ogg");
+    heartbeat = LoadSound("audios/heartbeat.ogg");
 
     // Overworld Sound
     overworldMusic = LoadMusicStream("audios/BGM/overworldMusic1.ogg");
@@ -255,49 +266,28 @@ int main()  {
         if (gameState == GAME || gameState == INFO) {
             gameState = MENU;
             // Reset game variables
-            gameStarted = false;
-            gameOver = false;
-            fruitsCaught = 0;
-            fruitsMissed = 0;
-            initialFruitCount = 1;
-            for (int i = 0; i < 10; i++) {
-                fruitSpeeds[i] = (float)(rand() % 2 + 1) * 0.5f; // Reset fruit speeds
-                fruitPositions[i].y = -(rand() % 800); // Reset fruit positions
-                fruitPositions[i].x = rand() % (screenWidth - 32);
-            }
-            mascotTexture = mascotNormal; // Reset mascot texture
+            ResetGameState(&playerPosition, &playerVelocity, playerScale, screenWidth, screenHeight, fruitPositions, fruitSpeeds, fruitCount, &fruitsCaught, &fruitsMissed, &initialFruitCount, &targetFruits, &gameStarted, &gameOver, &mascotTexture, mascotNormal, voicelineSounds, 7, menuMusic, overworldMusic, overworldMusic2, overworldMusic3, playerOverworldIdle, overworldGrass, &briefingDone, &voicelineIndex, &currentVoiceline, &charIndex, &charTime, &voicelinePlaying, &voicelineDelayTimer);
             currentVoiceline = NULL; // Reset current voiceline
             charIndex = 0; // Reset typing effect
             charTime = 0.0f; // Reset typing effect timer
             voicelinePlaying = false; // Reset voiceline playing state
             voicelineDelayTimer = 0.0f; // Reset voiceline delay timer
-
-            // Stop any currently playing voicelines
-            for (int i = 0; i < 7; i++) {
-                StopSound(voicelineSounds[i]);
-            }
-
-            // Stop in-game music and play main menu music
-            StopMusicStream(overworldMusic);
-            StopMusicStream(overworldMusic2);
-            StopMusicStream(overworldMusic3);
-            PlayMusicStream(menuMusic);
         } else if (gameState == MENU) {
             break; // Exit the loop to close the window
         }
     }
 
-    if (gameState == MENU) {
-        glitchTimer += GetFrameTime();
+        if (gameState == MENU) {
+            glitchTimer += GetFrameTime();
 
-        // Trigger glitch effect randomly
-        if (glitchTimer >= glitchInterval) {
-            glitchEffect = true;
-            glitchTimer = 0.0f;
-            glitchInterval = (float)(rand() % 10 + 5); // Random interval between 5 and 15 seconds
-            glitchEffectTimer = 0.0f; // Reset the glitch effect timer
+            // Trigger glitch effect randomly
+            if (glitchTimer >= glitchInterval) {
+                glitchEffect = true;
+                glitchTimer = 0.0f;
+                glitchInterval = (float)(rand() % 10 + 5); // Random interval between 5 and 15 seconds
+                glitchEffectTimer = 0.0f; // Reset the glitch effect timer
+            }
         }
-    }
 
     BeginDrawing();
 
@@ -448,7 +438,7 @@ int main()  {
                 // Check for good ending condition
                 if (fruitsCaught >= targetFruits) {
                     gameOver = true;
-                    TriggerGoodEnding(mascotJumpscare, voicelineSounds[6], customFont, screenWidth, screenHeight, voicelineSounds, 7);
+                    TriggerGoodEnding(mascotJumpscare, voicelineSounds[6], heartbeat, customFont, screenWidth, screenHeight, voicelineSounds, 7);
                 }
 
                 // Increase difficulty over time
@@ -626,7 +616,7 @@ int main()  {
     }
 
     // De-Initialization
-    DeinitializeGame(menuBackground, menuMusic, typingSound, btnClick, customFont, overworldBg, overworldGrass, overworldMusic, overworldMusic2, overworldMusic3, playerOverworldIdle, playerOverworldRunLeft, playerOverworldRunRight, fruits, fruitCount, mascotNormal, mascotAngry, mascotVeryAngry1, mascotVeryAngry2, mascotJumpscare, pentagram, voicelineSounds, 7, fruitCaughtSound, gamePause, playerRun, countdownSound, jumpscareSound);
+    DeinitializeGame(menuBackground, menuMusic, typingSound, btnClick, customFont, overworldBg, overworldGrass, overworldMusic, overworldMusic2, overworldMusic3, playerOverworldIdle, playerOverworldRunLeft, playerOverworldRunRight, fruits, fruitCount, mascotNormal, mascotAngry, mascotVeryAngry1, mascotVeryAngry2, mascotJumpscare, pentagram, voicelineSounds, 7, fruitCaughtSound, gamePause, playerRun, countdownSound, jumpscareSound, heartbeat);
 
     return 0;
 }
